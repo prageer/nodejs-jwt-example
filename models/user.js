@@ -20,9 +20,10 @@ User.statics.create = function(username, password) {
 
 // find one user by using username
 User.statics.findOneByUsername = function(username) {
-	return this.findOne({
-		username
-	}).exec();
+	console.log(username);
+    return this.findOne({
+        username
+    }).exec()
 }
 
 // verify the password of the User document
@@ -34,3 +35,5 @@ User.methods.assignAdmin = function() {
 	this.admin = true;
 	return this.save();
 }
+
+module.exports = mongoose.model('User', User)
