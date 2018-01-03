@@ -29,7 +29,7 @@ app.set('jwt-secret', config.secret);
 
 // index page, just for testing
 app.get('/', (req, res)=>{
-	res.send('Hello JWT');
+	res.send('Hello JWT- ');
 });
 
 // open the server
