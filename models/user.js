@@ -20,7 +20,6 @@ User.statics.create = function(username, password) {
 
 // find one user by using username
 User.statics.findOneByUsername = function(username) {
-	console.log(username);
     return this.findOne({
         username
     }).exec()

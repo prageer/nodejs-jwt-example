@@ -1,4 +1,5 @@
-const User = require('../../../models/user')
+const jwt = require('jsonwebtoken');
+const User = require('../../../models/user');
 
 /*
     POST /api/auth
@@ -10,7 +11,6 @@ const User = require('../../../models/user')
 
 exports.register = (req, res) => {
     const { username, password } = req.body;
-    console.log(req.body);
     let newUser = null
 
     // create a new user if does not exist
@@ -60,4 +60,75 @@ exports.register = (req, res) => {
     .then(assign)
     .then(respond)
     .catch(onError)
+}
+
+
+/*
+    POST /api/auth/login
+    {
+        username,
+        password
+    }
+*/
+
+exports.login = (req, res) => {
+    const {username, password} = req.body;
+    const secret = req.app.get('jwt-secret');
+
+    // check the user info & generate the jwt
+    const check = (user) => {
+    	if (!user) {
+    		// user doesn't exist
+    		throw new Error('login failed');
+    	} else {
+    		// user exists, check the password
+    		if(user.verify(password)) {
+    			// create a promise that generates jwt asynchronously
+    			const p = new Promise((resolve, reject)=>{
+    				jwt.sign(
+    					{
+    						_id: user._id,
+    						username: user.username,
+    						admin: user.admin
+    					},
+    					secret,
+    					{
+    						expiresIn: '7d',
+    						issuer: 'sam.com',
+    						subject: 'userInfo'
+    					}, (err, token)=>{
+    						if(err) {
+    							reject(err);
+    						}
+    						resolve(token);
+    					}
+    				)
+    			});
+    			return p
+    		} else {
+    			throw new Error('login failed');
+    		}
+    	}
+    }
+
+    // respond the token
+    const respond = (token)=>{
+    	res.json({
+    		message: 'logged in successfully',
+    		token
+    	})
+    }
+
+    // error occured
+    const onError = (error) => {
+    	res.status(403).json({
+    		message: error.message
+    	});
+    }
+
+    // find the user
+    User.findOneByUsername(username)
+    .then(check)
+    .then(respond)
+    .catch(onError);
 }
